@@ -34,7 +34,7 @@ public class HeaderDisplay extends JPanel {
         super();
         
         setBackground(Color.BLACK);
-        setPreferredSize(new Dimension(250, 200));
+        setPreferredSize(new Dimension(250, 260));
         
         repaint();
     }
@@ -49,6 +49,8 @@ public class HeaderDisplay extends JPanel {
        
         g.drawImage(new ImageIcon("images/admin/title.png").getImage(), 
                     0, 0, null);
+        g.drawImage(new ImageIcon("images/admin/subtitle.png").getImage(),
+                    10, 200, null);
         g.drawImage(new ImageIcon("images/admin/metadata.png").getImage(),
                     getSize().width - 300, 5, null);
     }

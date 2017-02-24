@@ -14,7 +14,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
@@ -89,6 +91,16 @@ public class DungeonDisplay extends JPanel {
      * Tracks whether the cursor is tracing or solving.
      */
     private boolean myState;
+    
+    /**
+     * Number of Goblins player has faced.
+     */
+    private int myGoblinsFaced;
+    
+    /**
+     * Holds the player's moves.
+     */
+    private List<String> myMoveSet;
 	    
     /**
      * Constructs a new Dungeon Display.
@@ -103,7 +115,10 @@ public class DungeonDisplay extends JPanel {
     	initProgressMap();
     	
     	myCursor = new Point(0, 0);
+    	
     	myPlayer = new Point(0, 0);
+    	myGoblinsFaced = myDungeonMap[0][0];
+    	myMoveSet = new ArrayList<String>();
     	
     	myState  = false;
 	    	
@@ -126,7 +141,7 @@ public class DungeonDisplay extends JPanel {
         g.drawImage(new ImageIcon("images/art/background.png").getImage(), 
         		                            0, 0, getWidth(), getHeight(), null);
         
-        g.drawString("Your Dungeon Map", 10, 20);
+        g.drawString("The Dungeon (Number of Goblins in Each Room)", 10, 20);
 	        
         final int mapH = myDungeonMap.length;
         final int mapW = myDungeonMap[0].length;
@@ -165,12 +180,34 @@ public class DungeonDisplay extends JPanel {
         
         int margin = x + scale + 50;
         
+        /* Draws player's stats. */
+        g.setColor(Color.BLACK);
+        g.fillRect(margin, 40, 100, 400);
+        g.setColor(Color.WHITE);
+        g.drawRect(margin, 40, 100, 400);
+        g.drawString("Goblins Fought: ", margin + 5, 55);
+        g.setFont(FONT_LG);
+        g.drawString("" + myGoblinsFaced, margin + 5, 80);
+        g.setFont(FONT);
+        g.drawString("My Moves: ", margin + 5, 105);
+        for (int i = 0; i < myMoveSet.size(); i++) {
+        	g.drawString(myMoveSet.get(i), margin + 10, 120 + (14 * i));
+        }
+        
+        x += 200;
+        
+        margin = x + scale + 50;
+        
         /* Draws solution cursor. */
         g.setColor(new Color(255, 224, 219, 120));
 		g.fillRect(margin + myCursor.x * scale, 40 + myCursor.y * scale, 
 				   scale, scale);
 		
-		g.setColor(new Color(163, 255, 255, 100));
+		if (myState) {
+			g.setColor(new Color(245, 193, 255, 100));
+		} else {
+			g.setColor(new Color(163, 255, 255, 100));
+		}
         /* Draws solution helpers during solving. */
 		if (cb(myCursor.y - 1, myCursor.x)) {
 	       	g.fillRect(margin + myCursor.x * scale, 40 + (myCursor.y - 1) * scale, 
@@ -183,7 +220,7 @@ public class DungeonDisplay extends JPanel {
 		
         g.setColor(Color.WHITE);
         
-        g.drawString("Least Goblins to Any Point", margin, 20);
+        g.drawString("Computer Solution Map (Least Goblins up Through Any Room)", margin, 20);
         
         final int solH = mySolutionMap.length;
         final int solW = mySolutionMap[0].length;
@@ -192,6 +229,7 @@ public class DungeonDisplay extends JPanel {
         	for (int j = 0; j < solW; j++) {
         		x = (j * scale) + margin;
         		y = (i * scale) + 40;
+                g.setColor(Color.WHITE);
         		if (mySolutionMap[i][j] == -1) {
         			g.drawString("?", x + offset, 
                             y + scale - offset);
@@ -217,7 +255,7 @@ public class DungeonDisplay extends JPanel {
        g.drawLine(x, yu, x, yl);
        g.drawLine(x, yl, xr, yl);
        g.drawLine(xr, yl, xr, yu);
-       g.drawString("Move Stack", x + 40, yl + 20);
+       g.drawString("Solution Move Stack", x + 20, yl + 20);
        
        g.setColor(Color.GREEN);
        final String[] moves = solutionStackToString().split(" ");
@@ -264,6 +302,8 @@ public class DungeonDisplay extends JPanel {
 		    	goblinSet += " ";
 		    }
 		    
+			g.setColor(new Color(245, 193, 255));
+
 		    g.drawString("We push " + mySolutionStack.peek() + " onto the Move Stack."
 		    		     + " Now we are considering the better (less total goblins)"
 		    		     + " sub-solution from the set { " + goblinSet + "}.", 
@@ -274,7 +314,6 @@ public class DungeonDisplay extends JPanel {
     		             + ") is in cell "
     	 	             + betterRoom + ".",
 			        10, HI_RES + 120);
-			g.setColor(new Color(163, 255, 255));
 
        } else {
 	       g.setColor(new Color(255, 224, 219));
@@ -327,6 +366,14 @@ public class DungeonDisplay extends JPanel {
      */
     public void setDungeonMap(final int[][] theMap) {
     	myDungeonMap = theMap;
+    	
+    	myCursor.x = 0;
+    	myCursor.y = 0;
+    	myPlayer.x = 0;
+    	myPlayer.y = 0;
+    	myGoblinsFaced = myDungeonMap[0][0];
+    	myMoveSet.clear();
+    	mySolutionStack.clear();
     	
     	repaint();
     }
@@ -386,18 +433,28 @@ public class DungeonDisplay extends JPanel {
 	 * @param theY y value to move (+ = down, - = up).
 	 */
 	public void movePlayer(final int theX, final int theY) {
-		boolean flag = false;
+		int flag = 0;
 		if (myPlayer.x < myDungeonMap[0].length - 1) {
 			myPlayer.x += theX;
-			flag = true;
+			if (theX == 1 && theY == 0) {
+				myGoblinsFaced += myDungeonMap[myPlayer.y][myPlayer.x];
+				myMoveSet.add("Right");
+			}
+			flag++;
 		}
 		if (myPlayer.y < myDungeonMap.length - 1) {
 			myPlayer.y += theY;
-			flag = true;
+			if (theX == 0 && theY == 1) { 
+				myGoblinsFaced += myDungeonMap[myPlayer.y][myPlayer.x];
+				myMoveSet.add("Down");
+			}
+			flag++;
 		}
-		if (!flag) {
+		if (flag == 0) {
 			myPlayer.x = 0;
 			myPlayer.y = 0;
+			myMoveSet.clear();
+			myGoblinsFaced = myDungeonMap[0][0];
 		}
 		repaint();
 	}

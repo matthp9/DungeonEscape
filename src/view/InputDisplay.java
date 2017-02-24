@@ -85,9 +85,9 @@ public class InputDisplay extends JPanel {
         myPanel             = new JPanel();
         myGUI               = theGUI;
         
-        myDungeonWidth = 5;
-        myDungeonHeight = 4;
-        myDungeonMaxGoblins = 3;
+        myDungeonWidth = 6;
+        myDungeonHeight = 6;
+        myDungeonMaxGoblins = 2;
         
         setPreferredSize(new Dimension(1300, 300));
         setBackground(Color.GRAY.darker().darker().darker());
@@ -131,11 +131,11 @@ public class InputDisplay extends JPanel {
         g.setFont(FONT);
         g.drawString("Input: " + myCurrentValueToAdd.toString(), 
                      x1 + offsetX, y1 + offsetY);
-        g.drawString("My Dungeon Width: " + myDungeonWidth,
+        g.drawString("My Dungeon Width (2-10): " + myDungeonWidth,
                      x1 + offsetX, y2 + offsetY);
-        g.drawString("My Dungeon Height: " + myDungeonHeight,
+        g.drawString("My Dungeon Height (2-10): " + myDungeonHeight,
                      x1 + offsetX, y3 + offsetY);
-        g.drawString("My Max Goblins per Room: " + myDungeonMaxGoblins,
+        g.drawString("My Max Goblins per Room (1-10): " + myDungeonMaxGoblins,
                 x1 + offsetX, y4 + offsetY);
         
         g.setFont(INSTRUCTIONS);
@@ -156,11 +156,11 @@ public class InputDisplay extends JPanel {
                      850, y1 + offsetY + 120);
         g.drawString("   * CLR clears your input.", 
                      850, y1 + offsetY + 140);
-        g.drawString("   * SOL shows a step-by-step solution.", 
+        g.drawString("   * SOL steps you through the solution.", 
                      850, y1 + offsetY + 160);
         g.drawString("4. Use the right (>) and down (v) cursors", 
                      850, y1 + offsetY + 180);
-        g.drawString("   to step through the dungeon on your own!", 
+        g.drawString("   to step through your dungeon on your own!", 
                      850, y1 + offsetY + 200);
         g.drawRect(825, y1, 370, 265);
     }
@@ -279,7 +279,7 @@ public class InputDisplay extends JPanel {
             } catch (final Exception e) {
                 // Failed, do nothing.
             }
-            if (toAdd > 1 && toAdd < 20) {
+            if (toAdd > 1 && toAdd <= 10) {
                 myDungeonHeight = toAdd;
                 myCurrentValueToAdd = new StringBuilder(4);
             }
@@ -303,7 +303,7 @@ public class InputDisplay extends JPanel {
             } catch (final Exception e) {
                 // Failed, do nothing.
             }
-            if (toAdd > 1 && toAdd < 20) {
+            if (toAdd > 1 && toAdd <= 10) {
             	myDungeonWidth = toAdd;
             	myCurrentValueToAdd = new StringBuilder(4);
             }
@@ -327,7 +327,7 @@ public class InputDisplay extends JPanel {
             } catch (final Exception e) {
                 // Failed, do nothing.
             }
-            if (toAdd < 10 && toAdd > 0) {
+            if (toAdd <= 10 && toAdd > 0) {
                 myDungeonMaxGoblins = toAdd;
                 myCurrentValueToAdd = new StringBuilder(4);
             }
