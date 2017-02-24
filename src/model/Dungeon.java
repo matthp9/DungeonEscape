@@ -63,7 +63,7 @@ public class Dungeon {
 	 * @param theHeight num cells in height.
 	 * @param theGoblins max goblins per room.
 	 */
-	protected Dungeon(final int theWidth, 
+	public Dungeon(final int theWidth, 
 					  final int theHeight, 
 			          final int theGoblins) {
 		/* Dungeon Dimensions. */
@@ -81,6 +81,22 @@ public class Dungeon {
 		
 		this.randomize();
 		this.solve();
+	}
+	
+	/**
+	 * Getter...
+	 * @return the map containing the regular rooms.
+	 */
+	public int[][] getMap() {
+		return myGoblinCounts;
+	}
+	
+	/**
+	 * Getter...
+	 * @return the solution map containing subsolutions.
+	 */
+	public int[][] getSolutions() {
+		return mySolution;
 	}
 	
 	/**
@@ -135,7 +151,7 @@ m	 * {@inheritDoc}
 	private void randomize() {
 		for (final int[] a : myGoblinCounts) {
 			for (int i = 0; i < a.length; i++) {
-				a[i] = MY_RANDOM.nextInt(myMaxGoblins);
+				a[i] = MY_RANDOM.nextInt(myMaxGoblins + 1);
 			}
 		}
 	}
@@ -156,8 +172,11 @@ m	 * {@inheritDoc}
 		int left = Integer.MAX_VALUE;
 		int up   = Integer.MAX_VALUE;
 		
-		for (int i = 0; i < myHeight; i++) {
-			for (int j = 0; j < myWidth; j++) {
+		int i = 0;
+		int j = 0;
+		
+		for (i = 0; i < myHeight; i++) {
+			for (j = 0; j < myWidth; j++) {
 				left = Integer.MAX_VALUE;
 				up   = Integer.MAX_VALUE;
 				if (cb(i - 1, j)) {
@@ -173,6 +192,8 @@ m	 * {@inheritDoc}
 				mySolution[i][j] = last + myGoblinCounts[i][j];
 			}
 		}
+		
+		myLeastGoblinsToFight = mySolution[--i][--j];
 		
 		retrace();
 	}
@@ -205,8 +226,6 @@ m	 * {@inheritDoc}
 				j -= 1;
 			}
 		}
-		
-		System.out.println("Done");
 	}
 	
 	/**
